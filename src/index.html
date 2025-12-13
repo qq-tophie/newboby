@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https:">
+  <title>RobBob Launcher</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-content">
+      <div class="loading-logo">ROBBOB</div>
+      <div class="loading-subtitle">Запуск лаунчера...</div>
+      <div class="loading-bar">
+        <div class="loading-progress" id="loadingProgress"></div>
+      </div>
+      <div class="loading-status" id="loadingStatus">Инициализация...</div>
+    </div>
+  </div>
+
+  <!-- Theme Transition Overlay -->
+  <div class="theme-transition-overlay" id="themeOverlay"></div>
+
+  <div class="launcher" id="launcher" style="display:none;">
+    <!-- Custom Titlebar -->
+    <div class="titlebar">
+      <div class="logo">
+        <div class="logo-icon"></div>
+        <span class="logo-text">ROBBOB</span>
+      </div>
+      <div class="spacer"></div>
+      <div class="win-controls">
+        <button id="minBtn" title="Свернуть">─</button>
+        <button id="maxBtn" title="Развернуть">□</button>
+        <button id="closeBtn" class="close" title="Закрыть">✕</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="status-block">
+          <div class="status-dot" id="connectionDot"></div>
+          <div class="status-info">
+            <div class="label">Онлайн</div>
+            <div class="sub"><span id="pingLabel">48ms</span></div>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <button class="nav-item active" data-page="page-main">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10"/>
+            </svg>
+            <span>Главная</span>
+          </button>
+
+          <button class="nav-item" data-page="page-news">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2"/>
+            </svg>
+            <span>Новости</span>
+          </button>
+
+          <div class="nav-category">Инструменты</div>
+
+          <button class="nav-item" data-page="page-accessories">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            <span>Примерка</span>
+          </button>
+
+          <button class="nav-item" data-page="page-servers">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="2" y="3" width="20" height="7" rx="1"/>
+              <rect x="2" y="14" width="20" height="7" rx="1"/>
+              <circle cx="6" cy="6.5" r="1"/>
+              <circle cx="6" cy="17.5" r="1"/>
+            </svg>
+            <span>Серверы</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button class="nav-item" data-page="page-settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+            </svg>
+            <span>Настройки</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="content">
+        <div class="topbar">
+          <div id="userProfile" class="user-profile" style="display:none;"></div>
+          <button class="theme-toggle" id="themeToggle" title="Сменить тему">
+            <span class="icon">🌙</span>
+            <span>Тема</span>
+          </button>
+          <button class="btn ghost" id="openLogin">Войти</button>
+        </div>
+
+        <section class="pages">
+          <!-- Main Page -->
+          <div id="page-main" class="page page-main active">
+            <div class="main-content">
+              <div class="main-logo">ROBBOB</div>
+              <div class="main-subtitle">Быстрый доступ к Roblox с улучшенным соединением</div>
+              <button class="play-btn" id="playBtn">▶ ИГРАТЬ</button>
+            </div>
+          </div>
+
+          <!-- News Page -->
+          <div id="page-news" class="page">
+            <div class="page-inner">
+              <h2 style="margin:0 0 16px 0; color:var(--text);">Новости</h2>
+              <div id="newsContainer" class="news-container">
+                <!-- News cards will be loaded dynamically -->
+                <div class="news-loading">
+                  <div class="loading-spinner"></div>
+                  <span>Загрузка новостей...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accessories Page -->
+          <div id="page-accessories" class="page">
+            <div class="page-inner" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+              <div class="card" style="max-width:420px; text-align:center;">
+                <h3 style="margin-bottom:12px;">🎭 Catalog Avatar Creator</h3>
+                <p style="margin-bottom:16px;">Примерь любые аксессуары на своего аватара перед покупкой.</p>
+                <button class="btn primary" style="width:100%;" id="openCatalog">Открыть →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Servers Page -->
+          <div id="page-servers" class="page">
+            <div class="page-inner">
+              <h2 style="margin:0 0 16px 0; color:var(--text);">Статус серверов</h2>
+              <div class="server-item">
+                <div class="name">🇷🇺 Россия (Москва)</div>
+                <div class="status-ok">● OK — 48ms</div>
+              </div>
+              <div class="server-item">
+                <div class="name">🇩🇪 Европа (Франкфурт)</div>
+                <div class="status-ok">● OK — 72ms</div>
+              </div>
+              <div class="server-item">
+                <div class="name">🇺🇸 США (Нью-Йорк)</div>
+                <div class="status-ok">● OK — 120ms</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings Page -->
+          <div id="page-settings" class="page">
+            <div class="page-inner">
+              <h2 style="margin:0 0 16px 0; color:var(--text);">Настройки</h2>
+              <div class="card">
+                <!-- Network Mode Toggle -->
+                <div class="setting-row">
+                  <div class="setting-left">
+                    <div class="setting-label-row">
+                      <span class="setting-label">Улучшенный сетевой режим</span>
+                      <span class="bypass-indicator" id="bypassIndicator"></span>
+                    </div>
+                    <div class="setting-desc">Безопасный канал подключения</div>
+                    <button class="details-link" id="bypassDetailsBtn">подробнее</button>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="bypassToggle" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+
+                <!-- Network Mode Select -->
+                <div class="setting-row" id="bypassModeRow">
+                  <div>
+                    <div class="setting-label">Режим подключения</div>
+                    <div class="setting-desc">Если не работает — попробуйте другой режим</div>
+                  </div>
+                  <select id="bypassModeSelect">
+                    <option value="general">Стандартный</option>
+                  </select>
+                </div>
+
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">Тема оформления</div>
+                    <div class="setting-desc">Выберите тёмную или светлую тему</div>
+                  </div>
+                  <select id="themeSelect">
+                    <option value="dark">Тёмная</option>
+                    <option value="light">Светлая</option>
+                  </select>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">Сворачивать в трей</div>
+                    <div class="setting-desc">При закрытии сворачивать в системный трей</div>
+                  </div>
+                  <select id="minimizeToTray">
+                    <option value="true">Включено</option>
+                    <option value="false">Выключено</option>
+                  </select>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">Версия</div>
+                    <div class="setting-desc">RobBob Launcher v1.0.0</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-bar">
+      <div class="footer-status">
+        <div class="dot" id="footerDot"></div>
+        <span id="footerStatus">Соединение стабильно</span>
+      </div>
+      <button class="play-btn-small" id="playBtnFooter">▶ ИГРАТЬ</button>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="modal" id="loginModal">
+    <div class="sheet">
+      <h2>Вход в аккаунт</h2>
+      <p>Введите никнейм Roblox для быстрого переключения.</p>
+      <input type="text" id="nickInput" placeholder="Ваш никнейм Roblox">
+      <div class="actions">
+        <button class="btn ghost" id="loginCancel">Отмена</button>
+        <button class="btn primary" id="loginConfirm">Войти</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div class="modal" id="profileModal">
+    <div class="sheet profile-sheet">
+      <div class="profile-modal-content">
+        <div class="profile-avatar-large" id="profileAvatarLarge"></div>
+        <div class="profile-info">
+          <h2 id="profileDisplayName">Игрок</h2>
+          <p class="profile-username" id="profileUsername">@username</p>
+          <div class="profile-stats">
+            <div class="profile-stat">
+              <span class="stat-label">Регистрация</span>
+              <span class="stat-value" id="profileCreated">-</span>
+            </div>
+          </div>
+          <div class="profile-actions">
+            <button class="btn primary" id="openRobloxProfile">Открыть профиль Roblox</button>
+            <button class="btn ghost" id="profileLogout">Выйти</button>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" id="profileModalClose">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Network Mode Info Modal -->
+  <div class="modal" id="bypassModal">
+    <div class="sheet bypass-info-sheet">
+      <h2>🛡️ Улучшенный сетевой режим</h2>
+      <div class="bypass-info-content">
+        <p>Безопасный канал подключения — это технология, которая обеспечивает стабильное соединение с игровыми серверами.</p>
+
+        <h3>Как это работает?</h3>
+        <p>Лаунчер использует специальную технологию оптимизации сетевых пакетов для улучшения качества соединения.</p>
+
+        <h3>Безопасно ли это?</h3>
+        <p>Да, всё работает локально на вашем компьютере и не передаёт данные на сторонние серверы. Ваш трафик не проходит через VPN или прокси.</p>
+
+        <h3>Технология основана на:</h3>
+        <p class="tech-link">Открытый проект для оптимизации сетевого соединения.</p>
+        <a href="https://github.com/Flowseal/zapret-discord-youtube/releases" class="btn ghost" id="openZapretGithub" style="margin-top:12px; width:100%; justify-content:center;">
+          Открыть GitHub репозиторий →
+        </a>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="bypassModalClose">Понятно</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="scripts/updater.js"></script>
+  <script src="scripts/loading.js"></script>
+  <script src="scripts/theme.js"></script>
+  <script src="scripts/navigation.js"></script>
+  <script src="scripts/modals.js"></script>
+  <script src="scripts/bypass.js"></script>
+  <script src="scripts/slideshow.js"></script>
+  <script src="scripts/news.js"></script>
+  <script src="scripts/app.js"></script>
+</body>
+</html>
