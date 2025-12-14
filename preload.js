@@ -13,7 +13,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Сетевой режим
   startBypass: (mode) => ipcRenderer.invoke('start-bypass', mode),
   stopBypass: () => ipcRenderer.invoke('stop-bypass'),
-  getBypassStatus: () => ipcRenderer.invoke('get-bypass-status'),
+  getBypassStatus: () => ipcRenderer.invoke('get-network-status'),
   getBypassModes: () => ipcRenderer.invoke('get-bypass-modes'),
 
   // События от main процесса
