@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "description": "Network bypass rules configuration for RobBobNet Engine",
+  
+  "modes": {
+    "general": {
+      "name": "Обычный",
+      "description": "Стандартный режим для большинства провайдеров",
+      "enabled": true,
+      "rules": [
+        {
+          "id": "udp-quic-general",
+          "protocol": "udp",
+          "ports": "443",
+          "hostList": "lists/list-general.txt",
+          "hostListExclude": "lists/list-exclude.txt",
+          "ipsetExclude": "lists/ipset-exclude.txt",
+          "desync": {
+            "type": "fake",
+            "repeats": 6,
+            "fakePayload": "bin/quic_initial_www_google_com.bin"
+          }
+        },
+        {
+          "id": "udp-discord-stun",
+          "protocol": "udp",
+          "ports": "19294-19344,50000-50100",
+          "filterL7": ["discord", "stun"],
+          "desync": {
+            "type": "fake",
+            "repeats": 6
+          }
+        },
+        {
+          "id": "tcp-discord-media",
+          "protocol": "tcp",
+          "ports": "2053,2083,2087,2096,8443",
+          "hostListDomains": ["discord.media"],
+          "desync": {
+            "type": "multisplit",
+            "splitSeqOvl": 568,
+            "splitPos": 1,
+            "splitSeqOvlPattern": "bin/tls_clienthello_4pda_to.bin"
+          }
+        },
+        {
+          "id": "tcp-google",
+          "protocol": "tcp",
+          "ports": "443",
+          "hostList": "lists/list-google.txt",
+          "ipIdZero": true,
+          "desync": {
+            "type": "multisplit",
+            "splitSeqOvl": 681,
+            "splitPos": 1,
+            "splitSeqOvlPattern": "bin/tls_clienthello_www_google_com.bin"
+          }
+        },
+        {
+          "id": "tcp-general",
+          "protocol": "tcp",
+          "ports": "80,443",
+          "hostList": "lists/list-general.txt",
+          "hostListExclude": "lists/list-exclude.txt",
+          "ipsetExclude": "lists/ipset-exclude.txt",
+          "desync": {
+            "type": "multisplit",
+            "splitSeqOvl": 568,
+            "splitPos": 1,
+            "splitSeqOvlPattern": "bin/tls_clienthello_4pda_to.bin"
+          }
+        },
+        {
+          "id": "udp-ipset-all",
+          "protocol": "udp",
+          "ports": "443",
+          "ipset": "lists/ipset-all.txt",
+          "hostListExclude": "lists/list-exclude.txt",
+          "ipsetExclude": "lists/ipset-exclude.txt",
+          "desync": {
+            "type": "fake",
+            "repeats": 6,
+            "fakePayload": "bin/quic_initial_www_google_com.bin"
+          }
+        },
+        {
+          "id": "tcp-ipset-all",
+          "protocol": "tcp",
+          "ports": "80,443",
+          "ipset": "lists/ipset-all.txt",
+          "hostListExclude": "lists/list-exclude.txt",
+          "ipsetExclude": "lists/ipset-exclude.txt",
+          "desync": {
+            "type": "multisplit",
+            "splitSeqOvl": 568,
+            "splitPos": 1,
+            "splitSeqOvlPattern": "bin/tls_clienthello_4pda_to.bin"
+          }
+        }
+      ]
+    },
+    
+    "ALT": {
+      "name": "ALT",
+      "description": "Альтернативный режим с fake+split",
+      "enabled": true,
+      "rules": [
+        {
+          "id": "udp-quic",
+          "protocol": "udp",
+          "ports": "443",
+          "hostList": "lists/list-general.txt",
+          "desync": {
+            "type": "fake",
+            "repeats": 6,
+            "fakePayload": "bin/quic_initial_www_google_com.bin"
+          }
+        },
+        {
+          "id": "udp-game-ports",
+          "protocol": "udp",
+          "ports": "50000-65535",
+          "desync": {
+            "type": "fake",
+            "repeats": 6
+          }
+        },
+        {
+          "id": "tcp-http-https",
+          "protocol": "tcp",
+          "ports": "80,443",
+          "hostList": "lists/list-general.txt",
+          "desync": {
+            "type": "fake_split2",
+            "splitSeqOvl": 1,
+            "splitPos": 1,
+            "fakePayload": "bin/tls_clienthello_www_google_com.bin"
+          }
+        }
+      ]
+    },
+    
+    "ALT2": {
+      "name": "ALT2",
+      "description": "Альтернативный режим 2",
+      "enabled": true,
+      "rules": [
+        {
+          "id": "udp-quic",
+          "protocol": "udp",
+          "ports": "443",
+          "hostList": "lists/list-general.txt",
+          "desync": {
+            "type": "fake",
+            "repeats": 6,
+            "fakePayload": "bin/quic_initial_www_google_com.bin"
+          }
+        },
+        {
+          "id": "udp-game-ports",
+          "protocol": "udp",
+          "ports": "50000-65535",
+          "desync": {
+            "type": "fake",
+            "repeats": 6
+          }
+        },
+        {
+          "id": "tcp-http-https",
+          "protocol": "tcp",
+          "ports": "80,443",
+          "hostList": "lists/list-general.txt",
+          "desync": {
+            "type": "split2",
+            "splitSeqOvl": 1,
+            "splitPos": 1
+          }
+        }
+      ]
+    }
+  },
+  
+  "globalSettings": {
+    "maxPacketSize": 1500,
+    "workerThreads": 4,
+    "logLevel": "info",
+    "logFile": "logs/engine.log",
+    "statsInterval": 60
+  }
+}
