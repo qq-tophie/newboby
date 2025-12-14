@@ -1520,6 +1520,161 @@ select:focus, input[type="text"]:focus {
 }
 
 /* ========================================
+   Telegram Gate Overlay
+   ======================================== */
+
+.telegram-gate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.telegram-gate-card {
+  max-width: 500px;
+  width: 100%;
+  background: var(--panel);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: telegramGateSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes telegramGateSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.telegram-gate-header {
+  padding: 32px 24px 20px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.telegram-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  background: linear-gradient(135deg, #0088cc, #00a0e9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(0, 136, 204, 0.4);
+}
+
+.telegram-icon svg {
+  width: 36px;
+  height: 36px;
+  color: #fff;
+}
+
+.telegram-gate-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.telegram-gate-body {
+  padding: 24px;
+}
+
+.telegram-gate-description {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+  text-align: center;
+}
+
+.telegram-gate-status {
+  padding: 16px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 20px;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.telegram-gate-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+.telegram-gate-spinner .spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: #0088cc;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.telegram-gate-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.telegram-btn {
+  width: 100%;
+  height: 44px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #0088cc, #00a0e9);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 20px rgba(0, 136, 204, 0.3);
+}
+
+.telegram-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(0, 136, 204, 0.4);
+}
+
+.telegram-btn svg {
+  flex-shrink: 0;
+}
+
+.telegram-exit-btn {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.telegram-exit-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--red);
+}
+
+/* ========================================
    Responsive
    ======================================== */
 

@@ -10,6 +10,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   launchRoblox: () => ipcRenderer.invoke('launch-roblox'),
   getRobloxProfile: (username) => ipcRenderer.invoke('get-roblox-profile', username),
 
+  // Telegram Gate Authentication
+  getTelegramStatus: () => ipcRenderer.invoke('get-telegram-status'),
+  startTelegramVerification: () => ipcRenderer.invoke('start-telegram-verification'),
+  checkTelegramSession: (sessionId) => ipcRenderer.invoke('check-telegram-session', sessionId),
+  forceExit: () => ipcRenderer.invoke('force-exit'),
+
   // Сетевой режим
   startBypass: (mode) => ipcRenderer.invoke('start-bypass', mode),
   stopBypass: () => ipcRenderer.invoke('stop-bypass'),
