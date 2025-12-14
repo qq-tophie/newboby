@@ -5,114 +5,85 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RobBob News Editor</title>
   <style>
-    :root {
-      --bg-1: #0a0b0f;
-      --bg-2: #12131a;
-      --panel: rgba(10,10,20,0.8);
-      --glass: rgba(255,255,255,0.08);
-      --border: rgba(255,255,255,0.15);
-      --accent: #a855f7;
-      --accent-2: #c084fc;
-      --green: #22c55e;
-      --red: #ef4444;
-      --muted: #cbd5e1;
-      --text: #f8fafc;
-      --radius: 8px;
-    }
-
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
     body {
-      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       background: linear-gradient(135deg, #0a0b0f 0%, #1a1b2e 50%, #0a0b0f 100%);
+      color: #f8fafc;
+      padding: 20px;
       min-height: 100vh;
-      color: var(--text);
-      padding: 40px 20px;
     }
 
     .container {
-      max-width: 900px;
+      max-width: 800px;
       margin: 0 auto;
     }
 
-    .header {
+    h1 {
       text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .logo {
-      font-size: 48px;
-      font-weight: 900;
-      letter-spacing: 4px;
-      color: #ffffff;
-      text-shadow: 0 0 30px rgba(168,85,247,0.5);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      font-size: 32px;
+      background: linear-gradient(135deg, #a855f7, #22c55e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .subtitle {
-      color: var(--muted);
-      font-size: 16px;
+      text-align: center;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 40px;
+      font-size: 14px;
     }
 
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
-
-    @media (max-width: 768px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
       padding: 24px;
-      backdrop-filter: blur(16px);
-    }
-
-    .panel h2 {
-      color: var(--accent);
-      font-size: 18px;
       margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      backdrop-filter: blur(10px);
     }
 
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
 
     label {
       display: block;
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+      font-size: 14px;
     }
 
-    input, textarea, select {
+    input[type="text"],
+    input[type="date"],
+    input[type="url"],
+    textarea,
+    select {
       width: 100%;
-      padding: 12px 14px;
-      background: var(--bg-1);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--text);
+      padding: 12px;
+      background: #12131a;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: #fff;
       font-family: inherit;
       font-size: 14px;
-      transition: border-color 0.2s;
+      transition: all 0.2s ease;
     }
 
-    input:focus, textarea:focus, select:focus {
+    input:focus,
+    textarea:focus,
+    select:focus {
       outline: none;
-      border-color: var(--accent);
+      border-color: #a855f7;
+      box-shadow: 0 0 0 3px rgba(168,85,247,0.1);
     }
 
     textarea {
@@ -123,99 +94,73 @@
     .checkbox-group {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .checkbox-group input {
-      width: auto;
-    }
-
-    .checkbox-group label {
-      margin-bottom: 0;
-      color: var(--text);
-      font-size: 14px;
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
     }
 
     .btn {
       padding: 12px 24px;
+      border-radius: 8px;
       border: none;
-      border-radius: var(--radius);
       font-family: inherit;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
-      justify-content: center;
       gap: 8px;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      background: linear-gradient(135deg, #a855f7, #c084fc);
       color: #fff;
-      box-shadow: 0 4px 20px rgba(168,85,247,0.35);
+      box-shadow: 0 4px 20px rgba(168,85,247,0.4);
     }
 
     .btn-primary:hover {
-      filter: brightness(1.1);
       transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(168,85,247,0.5);
     }
 
-    .btn-success {
-      background: linear-gradient(135deg, var(--green), #4ade80);
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
       color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
     }
 
-    .btn-success:hover {
-      filter: brightness(1.1);
-    }
-
-    .btn-danger {
-      background: var(--red);
-      color: #fff;
-    }
-
-    .btn-ghost {
-      background: var(--glass);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .btn-ghost:hover {
-      background: rgba(255,255,255,0.12);
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.15);
     }
 
     .btn-group {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       margin-top: 20px;
     }
 
-    .output-area {
-      position: relative;
-    }
-
-    #jsonOutput {
-      background: #0d0e12;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      font-family: 'Fira Code', 'Consolas', monospace;
-      font-size: 12px;
-      line-height: 1.6;
-      color: #e2e8f0;
+    #output {
+      background: #12131a;
+      padding: 20px;
+      border-radius: 8px;
       white-space: pre-wrap;
-      word-break: break-word;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #22c55e;
       max-height: 400px;
       overflow-y: auto;
-      min-height: 200px;
+      border: 1px solid rgba(255,255,255,0.1);
     }
 
-    .copy-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
+    #output:empty::before {
+      content: 'JSON появится здесь после создания новости...';
+      color: rgba(255,255,255,0.3);
+      font-style: italic;
     }
 
     .news-list {
@@ -223,496 +168,186 @@
     }
 
     .news-item {
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px;
-      margin-bottom: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 12px;
     }
 
-    .news-item.pinned {
-      border-color: var(--accent);
-    }
-
-    .news-item-icon {
-      font-size: 24px;
-    }
-
-    .news-item-content {
+    .news-item-info {
       flex: 1;
-      min-width: 0;
     }
 
     .news-item-title {
       font-weight: 600;
-      font-size: 14px;
       margin-bottom: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     .news-item-date {
-      font-size: 11px;
-      color: var(--muted);
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
     }
 
     .news-item-actions {
       display: flex;
-      gap: 6px;
+      gap: 8px;
     }
 
-    .news-item-actions button {
-      padding: 6px 10px;
-      font-size: 12px;
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .icon-btn.delete:hover {
+      background: rgba(239,68,68,0.2);
+      color: #ef4444;
     }
 
     .toast {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      padding: 14px 20px;
-      background: var(--panel);
-      border: 1px solid var(--green);
-      border-radius: var(--radius);
-      color: var(--text);
-      font-size: 14px;
-      animation: slideUp 0.3s ease;
+      background: #22c55e;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      animation: slideIn 0.3s ease;
       z-index: 1000;
     }
 
-    @keyframes slideUp {
+    @keyframes slideIn {
       from {
-        transform: translateY(20px);
+        transform: translateX(400px);
         opacity: 0;
       }
       to {
-        transform: translateY(0);
+        transform: translateX(0);
         opacity: 1;
       }
     }
 
-    .instructions {
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-top: 24px;
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.6;
+    .help-text {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 4px;
     }
 
-    .instructions h3 {
-      color: var(--text);
-      font-size: 14px;
-      margin-bottom: 10px;
-    }
-
-    .instructions ol {
-      margin-left: 20px;
-    }
-
-    .instructions li {
-      margin-bottom: 6px;
-    }
-
-    .instructions a {
-      color: var(--accent);
-    }
-
-    .emoji-select {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-      gap: 8px;
-    }
-
-    .emoji-option {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px;
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-size: 13px;
-      transition: all 0.2s;
-    }
-
-    .emoji-option:hover {
-      border-color: var(--accent);
-    }
-
-    .emoji-option.selected {
-      border-color: var(--accent);
-      background: rgba(168,85,247,0.15);
-    }
-
-    .emoji-option input {
-      display: none;
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(168,85,247,0.2);
+      color: #c084fc;
+      margin-left: 8px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <header class="header">
-      <div class="logo">ROBBOB</div>
-      <div class="subtitle">News Editor - Admin Panel</div>
-    </header>
+    <h1>RobBob News Editor</h1>
+    <p class="subtitle">Создавайте и управляйте новостями для лаунчера</p>
 
-    <div class="layout">
-      <!-- Editor Panel -->
-      <div class="panel">
-        <h2>📝 Добавить новость</h2>
-        
-        <form id="newsForm">
-          <div class="form-group">
-            <label for="title">Заголовок *</label>
-            <input type="text" id="title" placeholder="Обновление v1.1" required>
-          </div>
-
-          <div class="form-group">
-            <label>Иконка</label>
-            <div class="emoji-select" id="emojiSelect">
-              <label class="emoji-option selected">
-                <input type="radio" name="emoji" value="rocket" checked>
-                <span>🚀</span> Релиз
-              </label>
-              <label class="emoji-option">
-                <input type="radio" name="emoji" value="shield">
-                <span>🛡️</span> Защита
-              </label>
-              <label class="emoji-option">
-                <input type="radio" name="emoji" value="zap">
-                <span>⚡</span> Скорость
-              </label>
-              <label class="emoji-option">
-                <input type="radio" name="emoji" value="star">
-                <span>⭐</span> Важно
-              </label>
-              <label class="emoji-option">
-                <input type="radio" name="emoji" value="fire">
-                <span>🔥</span> Горячее
-              </label>
-              <label class="emoji-option">
-                <input type="radio" name="emoji" value="gift">
-                <span>🎁</span> Подарок
-              </label>
-              <label class="emoji-option">
-                <input type="radio" name="emoji" value="fix">
-                <span>🔧</span> Фикс
-              </label>
-              <label class="emoji-option">
-                <input type="radio" name="emoji" value="game">
-                <span>🎮</span> Игра
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="content">Содержание *</label>
-            <textarea id="content" placeholder="Описание новости..." required></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="link">Ссылка (опционально)</label>
-            <input type="url" id="link" placeholder="https://...">
-          </div>
-
-          <div class="form-group">
-            <div class="checkbox-group">
-              <input type="checkbox" id="pinned">
-              <label for="pinned">📌 Закрепить новость</label>
-            </div>
-          </div>
-
-          <div class="btn-group">
-            <button type="submit" class="btn btn-primary">+ Добавить</button>
-            <button type="button" class="btn btn-ghost" id="clearForm">Очистить</button>
-          </div>
-        </form>
-
-        <!-- News List -->
-        <div class="news-list" id="newsList">
-          <h3 style="margin: 20px 0 12px; font-size: 14px; color: var(--muted);">Добавленные новости:</h3>
-          <div id="newsItems">
-            <p style="color: var(--muted); font-size: 13px;">Нет добавленных новостей</p>
-          </div>
+    <!-- News Form -->
+    <div class="card">
+      <h2 style="margin-bottom: 20px; font-size: 18px;">Создать новость</h2>
+      <form id="newsForm">
+        <div class="form-group">
+          <label for="title">Заголовок *</label>
+          <input type="text" id="title" placeholder="Обновление v1.2 выпущено!" required>
         </div>
-      </div>
 
-      <!-- Output Panel -->
-      <div class="panel">
-        <h2>📋 JSON для GitHub Gist</h2>
-        
-        <div class="output-area">
-          <button class="btn btn-ghost copy-btn" id="copyBtn">📋 Копировать</button>
-          <div id="jsonOutput">{
-  "version": 1,
-  "lastUpdated": "",
-  "news": []
-}</div>
+        <div class="form-group">
+          <label for="emoji">Иконка</label>
+          <select id="emoji">
+            <option value="rocket">🚀 Обновление</option>
+            <option value="shield">🛡️ Безопасность</option>
+            <option value="zap">⚡ Улучшение</option>
+            <option value="star">⭐ Новинка</option>
+            <option value="fire">🔥 Важное</option>
+            <option value="party">🎉 Событие</option>
+            <option value="warning">⚠️ Внимание</option>
+            <option value="info">ℹ️ Информация</option>
+            <option value="check">✅ Исправление</option>
+            <option value="update">🔄 Изменение</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="content">Содержание *</label>
+          <textarea id="content" rows="3" placeholder="Описание новости..." required></textarea>
+          <div class="help-text">Краткое описание новости</div>
+        </div>
+
+        <div class="form-group">
+          <label for="date">Дата</label>
+          <input type="date" id="date">
+          <div class="help-text">Оставьте пустым для текущей даты</div>
+        </div>
+
+        <div class="form-group">
+          <label for="link">Ссылка (опционально)</label>
+          <input type="url" id="link" placeholder="https://github.com/...">
+          <div class="help-text">Ссылка на подробности (GitHub, сайт и т.д.)</div>
+        </div>
+
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="pinned">
+            <label for="pinned" style="margin: 0;">Закрепить новость</label>
+          </div>
+          <div class="help-text">Закреплённые новости показываются первыми</div>
         </div>
 
         <div class="btn-group">
-          <button class="btn btn-success" id="downloadBtn">💾 Скачать JSON</button>
-          <button class="btn btn-danger" id="clearAll">🗑️ Очистить всё</button>
+          <button type="submit" class="btn btn-primary">➕ Добавить новость</button>
+          <button type="button" class="btn btn-secondary" id="clearBtn">🗑️ Очистить</button>
         </div>
+      </form>
+    </div>
 
-        <div class="instructions">
-          <h3>📖 Как использовать:</h3>
-          <ol>
-            <li>Добавьте новости используя форму слева</li>
-            <li>Скопируйте сгенерированный JSON</li>
-            <li>Перейдите в <a href="https://gist.github.com" target="_blank">GitHub Gist</a></li>
-            <li>Создайте или обновите файл <code>news.json</code></li>
-            <li>Вставьте JSON и сохраните</li>
-            <li>Скопируйте Raw URL вашего Gist</li>
-            <li>Вставьте URL в <code>src/scripts/news.js</code> (GIST_URL)</li>
-          </ol>
-        </div>
+    <!-- Current News List -->
+    <div class="card">
+      <h2 style="margin-bottom: 16px; font-size: 18px;">
+        Текущие новости
+        <span class="badge" id="newsCount">0</span>
+      </h2>
+      <div id="newsList" class="news-list"></div>
+    </div>
+
+    <!-- Output JSON -->
+    <div class="card">
+      <h2 style="margin-bottom: 16px; font-size: 18px;">Результат (JSON)</h2>
+      <div id="output"></div>
+      <div class="btn-group">
+        <button class="btn btn-primary" id="copyBtn">📋 Копировать JSON</button>
+        <button class="btn btn-secondary" id="downloadBtn">💾 Скачать файл</button>
+      </div>
+      <div class="help-text" style="margin-top: 12px;">
+        Скопируйте JSON и вставьте в GitHub Gist с именем файла <code>news.json</code>
       </div>
     </div>
   </div>
 
-  <script>
-    // News data storage
-    let newsData = {
-      version: 1,
-      lastUpdated: new Date().toISOString(),
-      news: []
-    };
-
-    // DOM Elements
-    const form = document.getElementById('newsForm');
-    const jsonOutput = document.getElementById('jsonOutput');
-    const newsItems = document.getElementById('newsItems');
-    const copyBtn = document.getElementById('copyBtn');
-    const downloadBtn = document.getElementById('downloadBtn');
-    const clearAll = document.getElementById('clearAll');
-    const clearForm = document.getElementById('clearForm');
-    const emojiOptions = document.querySelectorAll('.emoji-option');
-
-    // Emoji map
-    const emojiMap = {
-      'rocket': '🚀',
-      'shield': '🛡️',
-      'zap': '⚡',
-      'star': '⭐',
-      'fire': '🔥',
-      'gift': '🎁',
-      'fix': '🔧',
-      'game': '🎮'
-    };
-
-    // Load from localStorage
-    function loadData() {
-      const saved = localStorage.getItem('robbob_news_editor');
-      if (saved) {
-        try {
-          newsData = JSON.parse(saved);
-          updateOutput();
-          renderNewsList();
-        } catch (e) {}
-      }
-    }
-
-    // Save to localStorage
-    function saveData() {
-      localStorage.setItem('robbob_news_editor', JSON.stringify(newsData));
-    }
-
-    // Update JSON output
-    function updateOutput() {
-      newsData.lastUpdated = new Date().toISOString();
-      jsonOutput.textContent = JSON.stringify(newsData, null, 2);
-    }
-
-    // Render news list
-    function renderNewsList() {
-      if (newsData.news.length === 0) {
-        newsItems.innerHTML = '<p style="color: var(--muted); font-size: 13px;">Нет добавленных новостей</p>';
-        return;
-      }
-
-      newsItems.innerHTML = newsData.news.map((item, index) => `
-        <div class="news-item ${item.pinned ? 'pinned' : ''}">
-          <span class="news-item-icon">${emojiMap[item.emoji] || '📰'}</span>
-          <div class="news-item-content">
-            <div class="news-item-title">${escapeHtml(item.title)}</div>
-            <div class="news-item-date">${item.date}</div>
-          </div>
-          <div class="news-item-actions">
-            <button class="btn btn-ghost" onclick="editNews(${index})">✏️</button>
-            <button class="btn btn-danger" onclick="deleteNews(${index})">🗑️</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // Generate unique ID
-    function generateId() {
-      return 'news-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-    }
-
-    // Escape HTML
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    // Handle emoji selection
-    emojiOptions.forEach(option => {
-      option.addEventListener('click', () => {
-        emojiOptions.forEach(o => o.classList.remove('selected'));
-        option.classList.add('selected');
-      });
-    });
-
-    // Form submit
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-
-      const title = document.getElementById('title').value.trim();
-      const content = document.getElementById('content').value.trim();
-      const link = document.getElementById('link').value.trim();
-      const pinned = document.getElementById('pinned').checked;
-      const emoji = document.querySelector('input[name="emoji"]:checked').value;
-
-      if (!title || !content) return;
-
-      const newsItem = {
-        id: generateId(),
-        title,
-        emoji,
-        content,
-        date: new Date().toISOString().split('T')[0],
-        pinned,
-        link: link || null
-      };
-
-      newsData.news.unshift(newsItem);
-      saveData();
-      updateOutput();
-      renderNewsList();
-      
-      // Reset form
-      form.reset();
-      emojiOptions.forEach(o => o.classList.remove('selected'));
-      emojiOptions[0].classList.add('selected');
-      
-      showToast('Новость добавлена!');
-    });
-
-    // Delete news
-    window.deleteNews = function(index) {
-      if (confirm('Удалить эту новость?')) {
-        newsData.news.splice(index, 1);
-        saveData();
-        updateOutput();
-        renderNewsList();
-        showToast('Новость удалена');
-      }
-    };
-
-    // Edit news (populate form)
-    window.editNews = function(index) {
-      const item = newsData.news[index];
-      document.getElementById('title').value = item.title;
-      document.getElementById('content').value = item.content;
-      document.getElementById('link').value = item.link || '';
-      document.getElementById('pinned').checked = item.pinned;
-      
-      // Select emoji
-      emojiOptions.forEach(o => {
-        o.classList.remove('selected');
-        if (o.querySelector('input').value === item.emoji) {
-          o.classList.add('selected');
-          o.querySelector('input').checked = true;
-        }
-      });
-
-      // Remove item and scroll to form
-      newsData.news.splice(index, 1);
-      saveData();
-      updateOutput();
-      renderNewsList();
-      
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      document.getElementById('title').focus();
-    };
-
-    // Copy to clipboard
-    copyBtn.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(jsonOutput.textContent);
-        showToast('JSON скопирован в буфер обмена!');
-      } catch (e) {
-        // Fallback
-        const textarea = document.createElement('textarea');
-        textarea.value = jsonOutput.textContent;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        showToast('JSON скопирован!');
-      }
-    });
-
-    // Download JSON
-    downloadBtn.addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(newsData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'news.json';
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('Файл скачан!');
-    });
-
-    // Clear all
-    clearAll.addEventListener('click', () => {
-      if (confirm('Очистить все новости?')) {
-        newsData.news = [];
-        saveData();
-        updateOutput();
-        renderNewsList();
-        showToast('Все новости удалены');
-      }
-    });
-
-    // Clear form
-    clearForm.addEventListener('click', () => {
-      form.reset();
-      emojiOptions.forEach(o => o.classList.remove('selected'));
-      emojiOptions[0].classList.add('selected');
-    });
-
-    // Toast notification
-    function showToast(message) {
-      const existing = document.querySelector('.toast');
-      if (existing) existing.remove();
-
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.textContent = message;
-      document.body.appendChild(toast);
-
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s';
-        setTimeout(() => toast.remove(), 300);
-      }, 2500);
-    }
-
-    // Initialize
-    loadData();
-  </script>
+  <script src="editor.js"></script>
 </body>
 </html>

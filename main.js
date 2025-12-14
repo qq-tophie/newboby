@@ -894,6 +894,13 @@ ipcMain.handle('get-bypass-modes', () => {
 // ============================================
 
 // =============================================
+// GITHUB CONFIGURATION
+// =============================================
+const GITHUB_OWNER = 'Flowseal';  // Change to your GitHub username
+const GITHUB_REPO = 'zapret-discord-youtube';  // Repository with bypass files
+const BYPASS_ASSET_NAME = 'bypass.zip';  // Asset name in release
+
+// =============================================
 // НАСТРОЙКИ СЕРВЕРА - ИЗМЕНИТЕ НА СВОИ URL
 // =============================================
 const UPDATE_CONFIG = {

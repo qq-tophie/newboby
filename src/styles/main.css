@@ -1519,6 +1519,52 @@ select:focus, input[type="text"]:focus {
   background: linear-gradient(90deg, var(--accent), var(--green));
 }
 
+.news-empty,
+.news-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.news-empty span,
+.news-error span {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.news-empty p,
+.news-error p {
+  font-size: 14px;
+  margin: 0;
+}
+
+.news-error .btn {
+  margin-top: 8px;
+}
+
+.news-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.news-pinned {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 /* ========================================
    Responsive
    ======================================== */
