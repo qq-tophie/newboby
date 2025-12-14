@@ -3,6 +3,19 @@ const path = require('path');
 const fs = require('fs');
 const { exec, spawn, execFile } = require('child_process');
 const Store = require('electron-store');
+const { v4: uuidv4 } = require('uuid');
+
+// Engine client for future integration with RobBobNetService
+let engineClient = null;
+try {
+  // Wrapped in try to avoid breaking dev flow if file is missing
+  // (e.g. when working on backend only).
+  // When engine/service are ready, this will be used instead of winws.exe.
+  // eslint-disable-next-line global-require
+  engineClient = require('./engineClient');
+} catch (e) {
+  engineClient = null;
+}
 
 const store = new Store();
 
@@ -28,6 +41,84 @@ if (!gotTheLock) {
 let mainWindow;
 let tray = null;
 let winwsProcess = null;
+
+// =============================
+// Telegram backend configuration
+// =============================
+
+const TELEGRAM_CONFIG = {
+  // Base URL of Telegram backend service
+  // In production, override via ROBBOB_TELEGRAM_BACKEND_URL env var
+  baseUrl: process.env.ROBBOB_TELEGRAM_BACKEND_URL || 'http://localhost:3000'
+};
+
+// Helper to build full backend URL
+function getTelegramUrl(pathname) {
+  try {
+    const base = new URL(TELEGRAM_CONFIG.baseUrl);
+    return new URL(pathname, base).toString();
+  } catch (e) {
+    // Fallback to simple concat
+    return `${TELEGRAM_CONFIG.baseUrl}${pathname}`;
+  }
+}
+
+// HTTP(S) helper for Telegram backend
+function telegramRequest(pathname, method = 'GET', body = null) {
+  const urlStr = getTelegramUrl(pathname);
+  const urlObj = new URL(urlStr);
+  const isHttps = urlObj.protocol === 'https:';
+  const httpLib = isHttps ? require('https') : require('http');
+
+  const options = {
+    hostname: urlObj.hostname,
+    port: urlObj.port || (isHttps ? 443 : 80),
+    path: urlObj.pathname + (urlObj.search || ''),
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'User-Agent': 'RobBob-Launcher'
+    }
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = httpLib.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        if (!data) {
+          resolve({});
+          return;
+        }
+        try {
+          resolve(JSON.parse(data));
+        } catch (e) {
+          // If backend returned non-JSON, still resolve to raw string
+          resolve({ raw: data });
+        }
+      });
+    });
+
+    req.on('error', reject);
+
+    if (body) {
+      req.write(JSON.stringify(body));
+    }
+
+    req.end();
+  });
+}
+
+// Generate or get persistent Telegram device ID
+function getTelegramDeviceId() {
+  let deviceId = store.get('telegram.deviceId', null);
+  if (!deviceId) {
+    deviceId = uuidv4();
+    store.set('telegram.deviceId', deviceId);
+  }
+  return deviceId;
+}
 
 // Проверка прав администратора на Windows
 function isAdmin() {
@@ -385,275 +476,87 @@ function parseWinwsArgsFromBat(batPath, bypassPath) {
 }
 
 // ============================================
-// ZAPRET / WINWS.EXE - НАДЕЖНАЯ РЕАЛИЗАЦИЯ
-// Запуск обхода DPI блокировок
+// NEW ENGINE FLOW - RobBobNetEngine via service
 // ============================================
 
-/**
- * Проверка всех необходимых файлов перед запуском
- */
-function verifyBypassFiles(bypassPath) {
-  const requiredFiles = [
-    path.join(bypassPath, 'bin', 'winws.exe'),
-    path.join(bypassPath, 'bin', 'WinDivert.dll'),
-    path.join(bypassPath, 'bin', 'WinDivert64.sys'),
-    path.join(bypassPath, 'lists', 'list-general.txt')
-  ];
-  
-  const missing = [];
-  for (const file of requiredFiles) {
-    if (!fs.existsSync(file)) {
-      missing.push(path.basename(file));
-    }
-  }
-  
-  if (missing.length > 0) {
-    console.error('Missing bypass files:', missing);
-    return { ok: false, missing };
-  }
-  
-  return { ok: true };
-}
-
-/**
- * Получить аргументы для winws.exe
- * Используем проверенные рабочие аргументы
- */
-function getWinwsArgs(bypassPath, mode) {
-  const binPath = path.join(bypassPath, 'bin');
-  const listsPath = path.join(bypassPath, 'lists');
-  
-  // Базовые аргументы которые работают для большинства провайдеров
-  // Основано на zapret project (bol-van/zapret)
-  const baseArgs = [
-    // Фильтр для UDP (QUIC)
-    '--wf-tcp=80,443',
-    '--wf-udp=443,50000-65535',
-    
-    // Обработка QUIC трафика
-    '--filter-udp=443',
-    '--hostlist=' + path.join(listsPath, 'list-general.txt'),
-    '--dpi-desync=fake',
-    '--dpi-desync-repeats=6',
-    '--dpi-desync-fake-quic=' + path.join(binPath, 'quic_initial_www_google_com.bin'),
-    '--new',
-    
-    // UDP для игр (Roblox использует UDP 50000-65535)
-    '--filter-udp=50000-65535',
-    '--dpi-desync=fake',
-    '--dpi-desync-repeats=6',
-    '--new',
-    
-    // TCP трафик (HTTP/HTTPS)
-    '--filter-tcp=80,443',
-    '--hostlist=' + path.join(listsPath, 'list-general.txt'),
-    '--dpi-desync=fake,split2',
-    '--dpi-desync-split-seqovl=1',
-    '--dpi-desync-split-pos=1',
-    '--dpi-desync-fake-tls=' + path.join(binPath, 'tls_clienthello_www_google_com.bin')
-  ];
-  
-  return baseArgs;
-}
-
-/**
- * Запуск winws.exe через BAT файл (самый надежный способ)
- * BAT файл сам устанавливает правильные пути и переменные
- */
-function startBypassViaBat(mode, bypassPath) {
-  const batFileName = getBatFileName(mode);
-  const batPath = path.join(bypassPath, batFileName);
-  
-  if (!fs.existsSync(batPath)) {
-    console.error('BAT file not found:', batPath);
-    return false;
-  }
-  
-  console.log('Starting bypass via BAT:', batPath);
-  
-  try {
-    // Запускаем BAT через cmd.exe с /min для минимизации окна
-    // и /c для закрытия после выполнения
-    const child = spawn('cmd.exe', ['/min', '/c', batPath], {
-      cwd: bypassPath,
-      windowsHide: true,
-      detached: true,
-      stdio: 'ignore',
-      shell: false
-    });
-    
-    child.unref();
-    return true;
-  } catch (err) {
-    console.error('Failed to start via BAT:', err);
-    return false;
-  }
-}
-
-/**
- * Запуск winws.exe напрямую (fallback)
- */
-function startBypassDirect(bypassPath) {
-  const winwsPath = path.join(bypassPath, 'bin', 'winws.exe');
-  const binPath = path.join(bypassPath, 'bin');
-  const args = getWinwsArgs(bypassPath, 'general');
-  
-  console.log('Starting winws.exe directly...');
-  console.log('Path:', winwsPath);
-  console.log('Args count:', args.length);
-  
-  try {
-    winwsProcess = spawn(winwsPath, args, {
-      cwd: binPath,  // ВАЖНО: рабочая директория должна быть bin/
-      windowsHide: true,
-      detached: true,
-      stdio: 'ignore',
-      shell: false
-    });
-    
-    winwsProcess.unref();
-    
-    winwsProcess.on('error', (err) => {
-      console.error('winws.exe spawn error:', err);
-      winwsProcess = null;
-    });
-    
-    return true;
-  } catch (err) {
-    console.error('Failed to spawn winws.exe:', err);
-    return false;
-  }
-}
-
-/**
- * Главная функция запуска bypass
- */
-function startBypass(mode = null) {
-  const bypassPath = getBypassPath();
+async function startBypass(mode = null) {
   const selectedMode = mode || store.get('bypassMode', 'general');
-  
-  console.log('=== Starting Bypass ===');
-  console.log('Bypass path:', bypassPath);
+
+  console.log('=== Starting Engine Bypass ===');
   console.log('Mode:', selectedMode);
-  
-  // Проверяем файлы
-  const verification = verifyBypassFiles(bypassPath);
-  if (!verification.ok) {
-    console.error('Bypass files verification failed');
+
+  if (!engineClient) {
+    console.error('engineClient not available');
     if (mainWindow) {
       mainWindow.webContents.send('network-status', {
         running: false,
-        error: 'Отсутствуют файлы: ' + verification.missing.join(', ')
+        error: 'Сетевой сервис RobBobNet не доступен (engineClient отсутствует).'
       });
     }
     return;
   }
-  
-  // Убиваем существующие процессы
-  killAllWinwsSync();
-  
-  // Пробуем запустить через BAT (самый надежный способ)
-  let started = startBypassViaBat(selectedMode, bypassPath);
-  
-  // Если BAT не сработал, пробуем напрямую
-  if (!started) {
-    console.log('BAT method failed, trying direct spawn...');
-    started = startBypassDirect(bypassPath);
-  }
-  
-  // Проверяем результат через 3 секунды
-  setTimeout(async () => {
-    const isRunning = await checkBypassRunning();
-    
-    console.log('Bypass check result:', isRunning);
-    store.set('bypassRunning', isRunning);
-    
+
+  const serviceAvailable = await engineClient.isServiceAvailable();
+  if (!serviceAvailable) {
+    console.error('RobBobNetService is not available');
     if (mainWindow) {
       mainWindow.webContents.send('network-status', {
-        running: isRunning,
-        mode: selectedMode,
-        error: isRunning ? null : 'Не удалось запустить обход. Проверьте права администратора.'
+        running: false,
+        error: 'Служба RobBobNet не запущена. Установите и запустите RobBobNetService.'
       });
     }
-  }, 3000);
-  
-  // Оптимистичное обновление UI
+    return;
+  }
+
+  const configDir = path.join(process.env.ProgramData || 'C:\\ProgramData', 'RobBobNet', 'config');
+
+  await engineClient.initialize(configDir);
+  const result = await engineClient.start(selectedMode);
+
+  if (!result || !result.success) {
+    console.error('Engine start failed:', result && result.error);
+    if (mainWindow) {
+      mainWindow.webContents.send('network-status', {
+        running: false,
+        error: result && result.error ? result.error : 'Не удалось запустить сетевой движок'
+      });
+    }
+    return;
+  }
+
+  store.set('bypassRunning', true);
+
   if (mainWindow) {
-    mainWindow.webContents.send('network-status', { running: true, mode: selectedMode });
-  }
-}
-
-/**
- * Синхронное завершение всех winws процессов
- */
-function killAllWinwsSync() {
-  try {
-    require('child_process').execSync('taskkill /F /IM winws.exe 2>nul', {
-      windowsHide: true,
-      stdio: 'ignore'
+    mainWindow.webContents.send('network-status', {
+      running: true,
+      mode: selectedMode,
+      error: null
     });
-    console.log('Killed existing winws.exe processes');
-  } catch (e) {
-    // Процесс не найден - это нормально
   }
 }
 
-// Остановка Bypass
-function stopBypass() {
+async function stopBypass() {
   store.set('bypassRunning', false);
 
-  // Kill the process if we have a reference
-  if (winwsProcess && !winwsProcess.killed) {
-    try {
-      winwsProcess.kill('SIGTERM');
-    } catch (err) {
-      console.error('Error killing winws process:', err);
-    }
+  if (engineClient) {
+    await engineClient.stop();
   }
-
-  // Also use taskkill as backup to ensure winws.exe is stopped
-  exec('taskkill /F /IM winws.exe', { windowsHide: true }, (err) => {
-    if (err) {
-      // Process might not exist, which is fine
-    }
-  });
-
-  winwsProcess = null;
-  bypassProcess = null;
 
   if (mainWindow) {
     mainWindow.webContents.send('network-status', { running: false });
   }
 }
 
-// Проверка работает ли winws.exe
-function checkBypassRunning() {
-  return new Promise((resolve) => {
-    exec('tasklist /FI "IMAGENAME eq winws.exe" /NH', { windowsHide: true }, (err, stdout) => {
-      if (err) {
-        resolve(false);
-        return;
-      }
-      resolve(stdout.toLowerCase().includes('winws.exe'));
-    });
-  });
-}
-
-// Принудительно завершить все процессы winws.exe
-function killAllWinws() {
-  return new Promise((resolve) => {
-    exec('taskkill /F /IM winws.exe', { windowsHide: true }, (err) => {
-      // Игнорируем ошибки - процесс может не существовать
-      resolve();
-    });
-  });
+async function checkBypassRunning() {
+  if (!engineClient) return false;
+  const state = await engineClient.getState();
+  return !!(state && state.success && state.state && state.state.running);
 }
 
 // Автозапуск bypass при старте приложения
 async function autoStartBypass() {
   const bypassEnabled = store.get('bypassEnabled', true);
-  if (bypassEnabled && checkBypassFiles()) {
-    // winws.exe уже убит при старте лаунчера, просто запускаем свой
+  if (bypassEnabled) {
     setTimeout(() => {
       startBypass();
     }, 1000);
@@ -863,6 +766,100 @@ ipcMain.handle('get-roblox-profile', async (event, username) => {
     console.error('Error fetching Roblox profile:', err);
     return { success: false, error: 'Ошибка получения профиля' };
   }
+});
+
+// ============================================
+// TELEGRAM GATE IPC HANDLERS
+// ============================================
+
+ipcMain.handle('get-telegram-status', async () => {
+  const token = store.get('telegram.membershipToken', null);
+  const deviceId = getTelegramDeviceId();
+
+  if (!token) {
+    return { hasToken: false, allowed: false };
+  }
+
+  try {
+    const result = await telegramRequest('/api/auth/validate', 'POST', {
+      launcherDeviceId: deviceId,
+      membershipToken: token
+    });
+
+    return {
+      hasToken: true,
+      allowed: !!result.allowed
+    };
+  } catch (err) {
+    console.error('Telegram validate error:', err);
+    return {
+      hasToken: true,
+      allowed: false
+    };
+  }
+});
+
+ipcMain.handle('start-telegram-verification', async () => {
+  const deviceId = getTelegramDeviceId();
+
+  try {
+    const result = await telegramRequest('/api/auth/start', 'POST', {
+      launcherDeviceId: deviceId
+    });
+
+    if (!result || !result.success || !result.sessionId) {
+      return {
+        success: false,
+        error: result && result.error ? result.error : 'Не удалось создать сессию авторизации'
+      };
+    }
+
+    if (result.botLink) {
+      try {
+        await shell.openExternal(result.botLink);
+      } catch (e) {
+        console.error('Failed to open Telegram bot link:', e);
+      }
+    }
+
+    return {
+      success: true,
+      sessionId: result.sessionId
+    };
+  } catch (err) {
+    console.error('Telegram start error:', err);
+    return {
+      success: false,
+      error: err.message || 'Ошибка подключения к Telegram серверу'
+    };
+  }
+});
+
+ipcMain.handle('check-telegram-session', async (event, sessionId) => {
+  if (!sessionId) {
+    return { status: 'error', error: 'sessionId is required' };
+  }
+
+  try {
+    const url = `/api/auth/status?sessionId=${encodeURIComponent(sessionId)}`;
+    const result = await telegramRequest(url, 'GET');
+
+    if (result && result.status === 'verified' && result.membershipToken) {
+      store.set('telegram.membershipToken', result.membershipToken);
+      store.set('telegram.verifiedAt', new Date().toISOString());
+    }
+
+    return result;
+  } catch (err) {
+    console.error('Telegram status error:', err);
+    return { status: 'error', error: err.message || 'Ошибка проверки статуса' };
+  }
+});
+
+ipcMain.handle('force-exit', () => {
+  app.isQuitting = true;
+  app.quit();
+  return true;
 });
 
 ipcMain.handle('start-bypass', (event, mode) => {
