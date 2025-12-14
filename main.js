@@ -503,21 +503,43 @@ function startBypassDirect(bypassPath) {
   console.log('Args count:', args.length);
   
   try {
+    // На Windows запускаем через PowerShell + Start-Process с полностью скрытым окном,
+    // чтобы гарантированно не мигало консольное окно даже при прямом запуске
+    if (process.platform === 'win32') {
+      const psArgs = args.join(' ');
+      const psCommand = `Start-Process -FilePath '${winwsPath}' -ArgumentList '${psArgs}' -WindowStyle Hidden`;
+
+      const child = spawn('powershell.exe', [
+        '-NoProfile',
+        '-WindowStyle', 'Hidden',
+        '-Command', psCommand
+      ], {
+        cwd: binPath,
+        windowsHide: true,
+        detached: true,
+        stdio: 'ignore'
+      });
+
+      child.unref();
+      return true;
+    }
+
+    // На других платформах (теоретически) пробуем прямой spawn
     winwsProcess = spawn(winwsPath, args, {
-      cwd: binPath,  // ВАЖНО: рабочая директория должна быть bin/
+      cwd: binPath,
       windowsHide: true,
       detached: true,
       stdio: 'ignore',
       shell: false
     });
-    
+
     winwsProcess.unref();
-    
+
     winwsProcess.on('error', (err) => {
       console.error('winws.exe spawn error:', err);
       winwsProcess = null;
     });
-    
+
     return true;
   } catch (err) {
     console.error('Failed to spawn winws.exe:', err);
