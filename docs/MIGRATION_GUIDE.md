@@ -44,7 +44,7 @@ This phase includes all planning, specifications, and JavaScript implementations
 
 ### Phase 2: Telegram Backend Implementation
 
-**Status:** Pending
+**Status:** Implemented (local backend template in `telegram-backend/`)
 
 **Requirements:**
 - Node.js or Python/Go backend server
@@ -52,7 +52,7 @@ This phase includes all planning, specifications, and JavaScript implementations
 - Telegram Bot Token
 - VPS or cloud hosting
 
-**Steps:**
+**Steps (implemented in this repo):**
 
 1. **Set up Database**
    ```sql
@@ -64,7 +64,7 @@ This phase includes all planning, specifications, and JavaScript implementations
    );
    ```
 
-2. **Implement REST API**
+2. **Implement REST API** (see `telegram-backend/src/server.js`)
    - POST `/api/auth/start`
    - GET `/api/auth/status`
    - POST `/api/auth/validate`
@@ -79,16 +79,17 @@ This phase includes all planning, specifications, and JavaScript implementations
 
 4. **Deploy and Test**
    - Deploy backend to server
-   - Configure environment variables
+   - Configure environment variables (see `telegram-backend/.env.example`)
+   - Initialize database schema (see `telegram-backend/database/schema.sql`)
    - Test full authentication flow
 
-**Estimated Time:** 1-2 days for experienced developer
+**Estimated Time:** 1-2 days for experienced developer (for production deployment and hardening)
 
 **Reference:** [`TELEGRAM_BACKEND_SPEC.md`](TELEGRAM_BACKEND_SPEC.md)
 
 ### Phase 3: C/C++ Engine Implementation
 
-**Status:** Pending
+**Status:** In Progress (core API, state & config skeleton implemented)
 
 **Requirements:**
 - Visual Studio 2019+ or MinGW-w64
@@ -114,11 +115,10 @@ This phase includes all planning, specifications, and JavaScript implementations
    ```
 
 2. **Implement Core API**
-   - `Engine_Initialize()`
-   - `Engine_Start()`
-   - `Engine_Stop()`
-   - `Engine_GetState()`
-   - See [`ENGINE_SPEC.md`](ENGINE_SPEC.md) for full API
+   - `Engine_Initialize()` / `Engine_Start()` / `Engine_Stop()` / `Engine_GetState()` skeleton implemented in `native/RobBobNetEngine/RobBobNetEngine.cpp`
+   - Robust state management (running flag, mode, uptime) and basic error codes implemented
+   - Lightweight configuration loader that validates `rules.json` presence and counts rules
+   - See [`ENGINE_SPEC.md`](ENGINE_SPEC.md) for full API and remaining work
 
 3. **Implement Packet Processing**
    - WinDivert integration
@@ -133,10 +133,13 @@ This phase includes all planning, specifications, and JavaScript implementations
 
 5. **Build and Test**
    ```bash
+   cd native
    mkdir build && cd build
    cmake ..
    cmake --build . --config Release
    ```
+
+   > Note: the CI/container environment used for this repository may not have CMake installed by default. See [`native/BUILD.md`](../native/BUILD.md) for full Windows build instructions.
 
 **Estimated Time:** 2-3 weeks for experienced C++ developer
 
