@@ -472,16 +472,35 @@ function startBypassViaBat(mode, bypassPath) {
   console.log('Starting bypass via BAT:', batPath);
   
   try {
-    // Запускаем BAT через cmd.exe с /min для минимизации окна
-    // и /c для закрытия после выполнения
-    const child = spawn('cmd.exe', ['/min', '/c', batPath], {
+    // На Windows запускаем BAT через PowerShell + Start-Process с полностью скрытым окном,
+    // чтобы гарантированно не появлялись дополнительные окна (findstr, cmd и т.п.)
+    if (process.platform === 'win32') {
+      const psCommand = `Start-Process -FilePath '${batPath}' -WindowStyle Hidden`;
+
+      const child = spawn('powershell.exe', [
+        '-NoProfile',
+        '-WindowStyle', 'Hidden',
+        '-Command', psCommand
+      ], {
+        cwd: bypassPath,
+        windowsHide: true,
+        detached: true,
+        stdio: 'ignore'
+      });
+
+      child.unref();
+      return true;
+    }
+
+    // На других платформах (теоретически) используем старую схему через cmd
+    const child = spawn('cmd.exe', ['/c', batPath], {
       cwd: bypassPath,
       windowsHide: true,
       detached: true,
       stdio: 'ignore',
       shell: false
     });
-    
+
     child.unref();
     return true;
   } catch (err) {
